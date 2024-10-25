@@ -1,4 +1,6 @@
 canvas = document.querySelector("#c");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 gl = canvas.getContext("webgl");
 if (!gl) {
     alert("WebGL is not supported.")
