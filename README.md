@@ -6,7 +6,7 @@ A Hierarchical (6 hierarchy) Windmill.
 
 1. `w`, `a`, `s`, `d` for moving the object `forward`, `left`, `backward`, `right`.
 
-2. `⬆️`, `⬇️`, `⬅️`, `➡️` for moving the camera `forward`, `left`, `backward`, `right`.
+2. `⬆️`, `⬅️`, `⬇️`, `➡️` for moving the camera `forward`, `left`, `backward`, `right`.
 
 3. `P/p`, `Y/y`, `R/r` for `increasing/decreasing` the pitch, yaw and roll angle. 
 
