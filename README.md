@@ -12,7 +12,7 @@ Open the index.html to launch.
 
 3. `P/p`, `Y/y`, `R/r` for `increasing/decreasing` the pitch, yaw and roll angle. 
 
-4. `h` for toggle whether showing hierarchy or not (hierarchy is rendered as wireframe of bounding boxes)
+4. `h` for toggle whether showing hierarchy or not (hierarchy is rendered as wireframe of bounding boxes, use same color for components of same depth)
 
 ## Note
 
