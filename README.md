@@ -4,6 +4,8 @@ A Hierarchical (6 hierarchy) Windmill.
 
 ## Usage
 
+Open the index.html to launch.
+
 1. `w`, `a`, `s`, `d` for moving the object `forward`, `left`, `backward`, `right`.
 
 2. `⬆️`, `⬅️`, `⬇️`, `➡️` for moving the camera `forward`, `left`, `backward`, `right`.
@@ -12,6 +14,9 @@ A Hierarchical (6 hierarchy) Windmill.
 
 4. `h` for toggle whether showing hierarchy or not (hierarchy is rendered as wireframe of bounding boxes)
 
+## Note
+
+The transformation of component is shown through only apply transformation on the `windmill shaft` and you can see the 4 blades rotate according to it.
 
 ## Bonus point attempted
 1. Matrix operation from scratch
