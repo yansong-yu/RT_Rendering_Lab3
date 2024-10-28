@@ -1,3 +1,65 @@
+function calculateBoundingBox(vertices) {
+  let minX = Infinity, minY = Infinity, minZ = Infinity;
+  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+
+  for (let i = 0; i < vertices.length; i += 3) {
+      const x = vertices[i];
+      const y = vertices[i + 1];
+      const z = vertices[i + 2];
+
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (z < minZ) minZ = z;
+
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+      if (z > maxZ) maxZ = z;
+  }
+
+  return {
+      min: { x: minX, y: minY, z: minZ },
+      max: { x: maxX, y: maxY, z: maxZ }
+  };
+}
+
+function createBoundingBoxLines(bbox) {
+    const vertices = [
+        // Front face
+        [bbox.min.x, bbox.min.y, bbox.min.z],  // 0
+        [bbox.max.x, bbox.min.y, bbox.min.z],  // 1
+        [bbox.max.x, bbox.max.y, bbox.min.z],  // 2
+        [bbox.min.x, bbox.max.y, bbox.min.z],  // 3
+
+        // Back face
+        [bbox.min.x, bbox.min.y, bbox.max.z],  // 4
+        [bbox.max.x, bbox.min.y, bbox.max.z],  // 5
+        [bbox.max.x, bbox.max.y, bbox.max.z],  // 6
+        [bbox.min.x, bbox.max.y, bbox.max.z]   // 7
+    ];
+
+    const lines = [
+        // Front edges
+        vertices[0], vertices[1], // edge 0
+        vertices[1], vertices[2], // edge 1
+        vertices[2], vertices[3], // edge 2
+        vertices[3], vertices[0], // edge 3
+
+        // Back edges
+        vertices[4], vertices[5], // edge 4
+        vertices[5], vertices[6], // edge 5
+        vertices[6], vertices[7], // edge 6
+        vertices[7], vertices[4], // edge 7
+
+        // Connecting edges
+        vertices[0], vertices[4], // edge 8
+        vertices[1], vertices[5], // edge 9
+        vertices[2], vertices[6], // edge 10
+        vertices[3], vertices[7]  // edge 11
+    ];
+
+    return lines;
+}
+
 class Shape{
     constructor(shape_dict, color=[1, 1, 1]){
         this.shape_dict = shape_dict;
@@ -6,6 +68,8 @@ class Shape{
         this.children = []
         this.vbo_v = null;
         this.vbo_n = null;
+        this.vbo_b = null;
+        this.bbox = calculateBoundingBox(shape_dict.vertices)
     }
 
     create_vbos(gl){
@@ -15,6 +79,9 @@ class Shape{
         this.vbo_n = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo_n);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.shape_dict.normals), gl.STATIC_DRAW);
+        this.vbo_b = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo_b);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(createBoundingBoxLines(this.bbox).flat(Infinity)), gl.STATIC_DRAW);
     }
 
     scale(s){

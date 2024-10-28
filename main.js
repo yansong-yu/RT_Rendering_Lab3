@@ -7,7 +7,13 @@ if (!gl) {
 }
 vertex_shader = create_shader(gl, gl.VERTEX_SHADER, vertex_shader_code);
 fragment_shader = create_shader(gl, gl.FRAGMENT_SHADER, fragment_shader_code);
+
+vertex_shader_wire = create_shader(gl, gl.VERTEX_SHADER, vertex_shader_code_wire);
+fragment_shader_wire = create_shader(gl, gl.FRAGMENT_SHADER, fragment_shader_code_wire);
+
 program = create_program(gl, vertex_shader, fragment_shader);
+program_wire = create_program(gl, vertex_shader_wire, fragment_shader_wire);
+
 position_loc = gl.getAttribLocation(program, "a_position")
 normal_loc = gl.getAttribLocation(program, "a_normal")
 color_loc = gl.getUniformLocation(program, 'color');
@@ -15,9 +21,27 @@ model_loc = gl.getUniformLocation(program, 'model');
 proj_view_loc = gl.getUniformLocation(program, 'proj_view');
 campos_loc = gl.getUniformLocation(program, 'camera_pos');
 
-gl.useProgram(program); 
+position_loc_wire = gl.getAttribLocation(program_wire, "a_position")
+color_loc_wire = gl.getUniformLocation(program_wire, 'color');
+model_loc_wire = gl.getUniformLocation(program_wire, 'model');
+proj_view_loc_wire = gl.getUniformLocation(program_wire, 'proj_view');
+
 gl.clearColor(0, 0, 0, 1);
 gl.enable(gl.DEPTH_TEST);
+
+render_hierarchy = false;
+hierarchy_colors = [
+    [1, 0, 0],    
+    [0, 1, 0],   
+    [0, 0, 1],    
+    [1, 1, 0],    
+    [0, 1, 1],    
+    [1, 0, 1],    
+    [1, 0.65, 0], 
+    [0.5, 0, 0.5], 
+    [0, 0, 0],   
+    [1, 1, 1]
+];
 
 function create_vbos(scene){
     scene.create_vbos(gl);
@@ -26,7 +50,7 @@ function create_vbos(scene){
     }
 }
 
-function draw_scene(scene, model){
+function draw_scene(scene, model, proj_view, depth){
     gl.bindBuffer(gl.ARRAY_BUFFER, scene.vbo_v)
     gl.vertexAttribPointer(
         position_loc,
@@ -46,16 +70,35 @@ function draw_scene(scene, model){
         0                 // Offset
     );
 
+    
+    gl.useProgram(program); 
     gl.enableVertexAttribArray(position_loc);
     gl.enableVertexAttribArray(normal_loc);
     gl.uniform3fv(color_loc, new Float32Array(scene.color));
     gl.uniformMatrix4fv(model_loc, false, new Float32Array(transpose4x4(multiply4x4Matrices(model, scene.model_matrix))));
-
-    // console.log(scene.get_vertex_count())
+    gl.uniformMatrix4fv(proj_view_loc, false, new Float32Array(proj_view));
+    gl.uniform3fv(campos_loc, cam.position)
     gl.drawArrays(gl.TRIANGLES, 0, scene.get_vertex_count());
 
+    if(render_hierarchy){
+        gl.useProgram(program_wire)
+        gl.enableVertexAttribArray(position_loc_wire);
+        gl.bindBuffer(gl.ARRAY_BUFFER, scene.vbo_b)
+        gl.vertexAttribPointer(
+            position_loc_wire,
+            3,                // Number of components per vertex (3 for vec3)
+            gl.FLOAT,         // Data type
+            false,            // Normalize
+            0,                // Stride
+            0                 // Offset
+        );
+        gl.uniform3fv(color_loc_wire, new Float32Array(hierarchy_colors[depth]));
+        gl.uniformMatrix4fv(model_loc_wire, false, new Float32Array(transpose4x4(multiply4x4Matrices(model, scene.model_matrix))));
+        gl.uniformMatrix4fv(proj_view_loc_wire, false, new Float32Array(proj_view));
+        gl.drawArrays(gl.LINES, 0, 24);
+    }
     for (let i = 0; i < scene.get_children_count(); i++) {
-        draw_scene(scene.get_child(i), multiply4x4Matrices(model, scene.model_matrix));
+        draw_scene(scene.get_child(i), multiply4x4Matrices(model, scene.model_matrix), proj_view, depth + 1);
     }
 }
 
@@ -72,10 +115,8 @@ function render (time) {
     proj = cam.computeProjectionMatrix()
     view = cam.computeViewMatrix()
     proj_view = transpose4x4(multiply4x4Matrices(proj, view))
-    gl.uniformMatrix4fv(proj_view_loc, false, new Float32Array(proj_view));
-    gl.uniform3fv(campos_loc, cam.position)
     scene.get_child(0).get_child(0).rotate(0, 0.5, 0)
-    draw_scene(scene, get_identity_matrix())
+    draw_scene(scene, get_identity_matrix(), proj_view, 0)
     requestAnimationFrame(render);
 }
 requestAnimationFrame(render);
@@ -83,7 +124,6 @@ requestAnimationFrame(render);
 
 //////// event
 
-// Event listener for keydown
 window.addEventListener("keydown", (event) => {
     if(["w", "a", "s", "d"].includes(event.key)){
         let [x, y, z] = cam.get_cam_axis()
@@ -126,6 +166,10 @@ window.addEventListener("keydown", (event) => {
         cam.position[0] += sign * speed * x[0];
         cam.position[1] += sign * speed * x[1];
         cam.position[2] += sign * speed * x[2];
+    }
+
+    if (event.key == "h"){
+        render_hierarchy ^= 1
     }
 });
 

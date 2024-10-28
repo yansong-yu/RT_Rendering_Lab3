@@ -10,6 +10,8 @@ A Hierarchical (6 hierarchy) Windmill.
 
 3. `P/p`, `Y/y`, `R/r` for `increasing/decreasing` the pitch, yaw and roll angle. 
 
+4. `h` for toggle whether showing hierarchy or not (hierarchy is rendered as wireframe of bounding boxes)
+
 
 ## Bonus point attempted
 1. Matrix operation from scratch

@@ -75,3 +75,24 @@ fragment_shader_code = `
     }`
 
 
+
+vertex_shader_code_wire = `
+    attribute vec3 a_position;
+
+    uniform vec3 color;
+    uniform mat4 model;
+    uniform mat4 proj_view;
+    varying vec3 frag_color;
+
+    void main() {
+        gl_Position = proj_view * model * vec4(a_position, 1.0);
+        frag_color = color;
+    }`
+
+fragment_shader_code_wire = `
+    precision mediump float;
+    varying vec3 frag_color;
+
+    void main() {
+        gl_FragColor = vec4(frag_color, 1.0);
+    }`
